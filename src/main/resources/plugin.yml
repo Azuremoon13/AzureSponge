@@ -1,0 +1,15 @@
+name: AzureSponge
+version: 1.0.0
+api-version: 1.18
+description: Upgraded Sponge
+author: Azuremoon
+main: xyz.azuremoon.AzureSponge
+
+permissions:
+    # YET TO BE IMPLEMENTED #
+    Sponge.shield:
+      default: false
+
+    Sponge.lava:
+      description: Always Sponge to remove lava in set radius
+      default: op
