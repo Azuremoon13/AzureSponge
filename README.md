@@ -1,2 +1,2 @@
 # AzureSponge
-Upgrade version on Vanilla MC sponge
+Upgraded version on Vanilla MC sponge
