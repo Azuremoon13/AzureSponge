@@ -6,7 +6,7 @@ object ConfigController {
 
     private const val SPONGERADIUS = "spongeRadius"
 
-    private const val DEFAULT_SPONGERADIUS = 25
+    private const val DEFAULT_SPONGERADIUS = 20
 
     val spongeRadius: Int
         get() {

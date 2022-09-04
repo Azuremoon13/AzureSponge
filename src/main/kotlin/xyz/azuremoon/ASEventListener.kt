@@ -12,7 +12,7 @@ class ASEventListener : Listener {
 
     @EventHandler
     fun onSpongePlace(e: BlockPlaceEvent){
-        if (e.blockPlaced.type != Material.SPONGE) return
+        if (e.blockPlaced.type != Material.SPONGE || !e.player.hasPermission("sponge.use")) return
         sphereAround(e.blockPlaced.location, ConfigController.spongeRadius).forEach {
             when (it.type) {
                 Material.WATER -> it.type = Material.AIR
@@ -20,6 +20,9 @@ class ASEventListener : Listener {
                     it.type = Material.AIR
                 }
                 else -> {}
+            }
+            if (e.player.hasPermission("sponge.dry")){
+                e.blockPlaced.type = Material.SPONGE
             }
         }
     }

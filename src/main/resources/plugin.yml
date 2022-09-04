@@ -6,10 +6,18 @@ author: Azuremoon
 main: xyz.azuremoon.AzureSponge
 
 permissions:
-    # YET TO BE IMPLEMENTED #
-    Sponge.shield:
-      default: false
 
-    Sponge.lava:
+    sponge.use:
+      default: true
+
+#     YET TO BE IMPLEMENTED   #
+#    sponge.shield:
+#      default: false
+
+    sponge.lava:
       description: Always Sponge to remove lava in set radius
+      default: true
+
+    sponge.dry:
+      description: Allows sponge to remain dry after each use
       default: op
