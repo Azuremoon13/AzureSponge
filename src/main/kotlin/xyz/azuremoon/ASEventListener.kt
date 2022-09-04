@@ -21,9 +21,9 @@ class ASEventListener : Listener {
                 }
                 else -> {}
             }
-            if (e.player.hasPermission("sponge.dry")){
-                e.blockPlaced.type = Material.SPONGE
-            }
+        }
+        if (e.player.hasPermission("sponge.dry")) {
+            e.blockPlaced.type = Material.SPONGE
         }
     }
 
