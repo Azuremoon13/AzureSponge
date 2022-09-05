@@ -13,7 +13,7 @@ class ASEventListener : Listener {
 
     @EventHandler
     fun onSpongePlace(e: BlockPlaceEvent){
-        if (e.blockPlaced.type != Material.SPONGE || !e.player.hasPermission("sponge.use") || e.block.isLiquid) return
+        if (e.blockPlaced.type != Material.SPONGE || !e.player.hasPermission("sponge.use")) return
         sphereAround(e.blockPlaced.location, ConfigController.spongeRadius).forEach {
             when (it.type) {
                 Material.KELP_PLANT -> {it.breakNaturally(); it.type = Material.AIR}
