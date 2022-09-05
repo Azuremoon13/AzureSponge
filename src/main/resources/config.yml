@@ -1,5 +1,8 @@
 # Radius for Sponge to remove water or lava
 spongeRadius: 20
 
+# Radius for SpongeShield to remove water or lava
+shieldRadius: 10
+
 # Remove Water from waterlogged blocks.
 clearWaterLog: true
