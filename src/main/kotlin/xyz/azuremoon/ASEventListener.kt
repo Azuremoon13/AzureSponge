@@ -9,13 +9,14 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import xyz.azuremoon.util.ConfigController
+import kotlin.math.sqrt
 
 class ASEventListener : Listener {
 
     @EventHandler
-    fun onSpongePlace(e: BlockPlaceEvent){
+    fun onSpongePlace(e: BlockPlaceEvent) {
         if (e.blockPlaced.type != Material.SPONGE || !e.player.hasPermission("sponge.use")) return
-        sphereAround(e.blockPlaced.location, ConfigController.spongeRadius).forEach {void ->
+        areaAround(e.block.location, ConfigController.spongeRadius).forEach { void ->
             when (void.type) {
                 Material.KELP_PLANT -> {
                     void.breakNaturally(); void.type = Material.AIR
@@ -40,12 +41,13 @@ class ASEventListener : Listener {
                 }
             }
         }
-        val  shieldArea = sphereAround(e.blockPlaced.location, (ConfigController.shieldRadius))
-        val  voidArea = sphereAround(e.blockPlaced.location, (ConfigController.shieldRadius - 1))
-        if (e.player.hasPermission("sponge.shield")){
+
+        if (e.player.hasPermission("sponge.shield")) {           // might change to player interaction even so can check if crouched.
+            val shieldArea = areaAround(e.blockPlaced.location, (ConfigController.shieldRadius))
+            val voidArea = areaAround(e.blockPlaced.location, (ConfigController.shieldRadius - 1))
             shieldArea.forEach structure@{
                 if (it in voidArea) return@structure
-                when (it.type){
+                when (it.type) {
                     Material.AIR -> it.type = Material.STRUCTURE_VOID
                     else -> {}
                 }
@@ -53,31 +55,46 @@ class ASEventListener : Listener {
         }
         if (e.player.hasPermission("sponge.dry")) {
             e.blockPlaced.type = Material.SPONGE
+        } else {
+            e.blockPlaced.type = Material.WET_SPONGE
         }
-        else {e.blockPlaced.type = Material.WET_SPONGE}
     }
 
     @EventHandler
-    fun onSpongeRemove(e: BlockBreakEvent){
-        if ((e.block.type != Material.SPONGE || e.block.type != Material.WET_SPONGE) && !e.player.hasPermission("sponge.shield")) return
-        sphereAround(e.block.location, ConfigController.shieldRadius).forEach{
-            when (it.type){
-                Material.STRUCTURE_VOID -> it.type = Material.AIR
-                else -> {}
+    fun onSpongeRemove(e: BlockBreakEvent) {
+        if (e.block.type == Material.SPONGE || e.block.type == Material.WET_SPONGE) {
+            areaAround(e.block.location, ConfigController.shieldRadius).forEach {
+                when (it.type) {
+                    Material.STRUCTURE_VOID -> it.type = Material.AIR
+                    else -> {}
+                }
             }
         }
     }
 
-    private fun sphereAround(location: Location, radius: Int): List<Block> {
-        val sphere = mutableListOf<Block>()
+    private fun areaAround(
+        location: Location,
+        radius: Int,
+        hollow: Boolean = false
+        ): List<Block> {
+        val area = mutableListOf<Block>()
         val range = -radius..radius
         range.forEach { x ->
             range.forEach { y ->
                 range.forEach { z ->
-                    sphere.add(location.block.getRelative(x, y, z))
+                    if (ConfigController.clearShape == "cube") {
+                        area.add(location.block.getRelative(x, y, z))
+                    }
+                    if (ConfigController.clearShape == "sphere") {
+                        if (sqrt((x * x + y * y + z * z).toDouble()) <= radius) {
+                            area.add(location.block.getRelative(x, y, z))
+                            }
+                        }
+                    }
                 }
             }
+        return area
         }
-        return sphere
-    }
 }
+
+

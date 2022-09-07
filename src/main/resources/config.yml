@@ -6,3 +6,6 @@ shieldRadius: 10
 
 # Remove Water from waterlogged blocks.
 clearWaterLog: true
+
+#Shape of sponge drain area (sphere, cube)
+clearShape: "sphere"
