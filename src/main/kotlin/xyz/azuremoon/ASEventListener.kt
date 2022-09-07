@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.block.SpongeAbsorbEvent
 import xyz.azuremoon.util.ConfigController
 import kotlin.math.sqrt
 
@@ -27,6 +28,7 @@ class ASEventListener : Listener {
                 Material.SEAGRASS -> void.type = Material.AIR
                 Material.TALL_SEAGRASS -> void.type = Material.AIR
                 Material.WATER -> void.type = Material.AIR
+                Material.BUBBLE_COLUMN -> void.type = Material.AIR
                 Material.LAVA -> if (e.player.hasPermission("sponge.lava")) {
                     void.type = Material.AIR
                 }
@@ -71,6 +73,11 @@ class ASEventListener : Listener {
             }
         }
     }
+
+//    @EventHandler
+//    fun spongeOverride(e: SpongeAbsorbEvent){
+//        e.isCancelled = true
+//    }
 
     private fun areaAround(
         location: Location,

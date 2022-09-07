@@ -13,7 +13,7 @@ class AzureSponge : JavaPlugin() {
 
     override fun onEnable() {
         instance = this
-        logger.info("Azure says Hello star-shine! :3")
+        logger.info("AzureSponge says Hello star-shine! :3")
         saveDefaultConfig()
         server.pluginManager.registerEvents(ASEventListener(), this)
     }
