@@ -16,13 +16,11 @@ class ASEventListener : Listener {
 
     @EventHandler
     fun onSpongePlace(e: BlockPlaceEvent) {
-        if (e.blockPlaced.type != Material.SPONGE) return
+        if (e.blockPlaced.type != Material.SPONGE || e.blockReplacedState.type != Material.WATER) return
 
-        val drainRadius = if (e.player.hasPermission("sponge.use")){
-            ConfigController.spongeRadius
-        } else { 4 }
-
-        val drainArea = areaAround(e.block.location, drainRadius)
+        val drainArea = if (e.player.hasPermission("sponge.use")){areaAround(e.block.location, ConfigController.spongeRadius)} else {
+            areaAround(e.block.location, 5, "sphere")
+        }
 
         drainArea.forEach { void ->
             when (void.type) {
@@ -52,10 +50,8 @@ class ASEventListener : Listener {
         }
 
         if (e.player.hasPermission("sponge.shield") && e.player.isSneaking) {
-            val shieldArea = areaAround(e.blockPlaced.location, (ConfigController.shieldRadius))
-            val voidArea = areaAround(e.blockPlaced.location, (ConfigController.shieldRadius - 1))
-            shieldArea.forEach structure@{
-                if (it in voidArea) return@structure
+            val shieldArea = areaAround(e.blockPlaced.location, (ConfigController.shieldRadius), hollow = true)
+            shieldArea.forEach {
                 when (it.type) {
                     Material.AIR -> it.type = Material.STRUCTURE_VOID
                     else -> {}
@@ -98,10 +94,14 @@ class ASEventListener : Listener {
             range.forEach { y ->
                 range.forEach { z ->
                     if (shape == "cube") {
-                        area.add(location.block.getRelative(x, y, z))
+                        if (!hollow || ((x == -radius || x == radius) || (y == -radius || y == radius) || (z == -radius || z == radius))){
+                            area.add(location.block.getRelative(x, y, z))
+                        }
                     }
+
                     if (shape == "sphere") {
-                        if (sqrt((x * x + y * y + z * z).toDouble()) <= radius) {
+                        val distance = sqrt((x * x + y * y + z * z).toDouble())
+                        if(distance <= radius && !(hollow && distance <= (radius - 1))) {
                             area.add(location.block.getRelative(x, y, z))
                             }
                         }

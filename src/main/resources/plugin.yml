@@ -16,8 +16,8 @@ permissions:
 
     sponge.shield:
       description: Places a barrier at edge of drain radius to prevent water ingress while sponge is in place
-      default: op
+      default: true
 
     sponge.dry:
       description: Allows sponge to remain dry after each use
-      default: op
+      default: true
