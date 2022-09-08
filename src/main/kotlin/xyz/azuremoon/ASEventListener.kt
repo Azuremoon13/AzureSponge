@@ -16,8 +16,15 @@ class ASEventListener : Listener {
 
     @EventHandler
     fun onSpongePlace(e: BlockPlaceEvent) {
-        if (e.blockPlaced.type != Material.SPONGE || !e.player.hasPermission("sponge.use")) return
-        areaAround(e.block.location, ConfigController.spongeRadius).forEach { void ->
+        if (e.blockPlaced.type != Material.SPONGE) return
+
+        val drainRadius = if (e.player.hasPermission("sponge.use")){
+            ConfigController.spongeRadius
+        } else { 4 }
+
+        val drainArea = areaAround(e.block.location, drainRadius)
+
+        drainArea.forEach { void ->
             when (void.type) {
                 Material.KELP_PLANT -> {
                     void.breakNaturally(); void.type = Material.AIR
@@ -44,7 +51,7 @@ class ASEventListener : Listener {
             }
         }
 
-        if (e.player.hasPermission("sponge.shield")) {           // might change to player interaction even so can check if crouched.
+        if (e.player.hasPermission("sponge.shield") && e.player.isSneaking) {
             val shieldArea = areaAround(e.blockPlaced.location, (ConfigController.shieldRadius))
             val voidArea = areaAround(e.blockPlaced.location, (ConfigController.shieldRadius - 1))
             shieldArea.forEach structure@{
@@ -74,14 +81,15 @@ class ASEventListener : Listener {
         }
     }
 
-//    @EventHandler
-//    fun spongeOverride(e: SpongeAbsorbEvent){
-//        e.isCancelled = true
-//    }
+    @EventHandler
+    fun spongeOverride(e: SpongeAbsorbEvent){
+        e.isCancelled = true
+    }
 
     private fun areaAround(
         location: Location,
         radius: Int,
+        shape: String = ConfigController.clearShape,
         hollow: Boolean = false
         ): List<Block> {
         val area = mutableListOf<Block>()
@@ -89,10 +97,10 @@ class ASEventListener : Listener {
         range.forEach { x ->
             range.forEach { y ->
                 range.forEach { z ->
-                    if (ConfigController.clearShape == "cube") {
+                    if (shape == "cube") {
                         area.add(location.block.getRelative(x, y, z))
                     }
-                    if (ConfigController.clearShape == "sphere") {
+                    if (shape == "sphere") {
                         if (sqrt((x * x + y * y + z * z).toDouble()) <= radius) {
                             area.add(location.block.getRelative(x, y, z))
                             }
