@@ -10,13 +10,13 @@ permissions:
     sponge.use:
       default: true
 
-#     YET TO BE IMPLEMENTED   #
-#    sponge.shield:
-#      default: false
-
     sponge.lava:
       description: Always Sponge to remove lava in set radius
       default: true
+
+    sponge.shield:
+      description: Places a barrier at edge of drain radius to prevent water ingress while sponge is in place
+      default: op
 
     sponge.dry:
       description: Allows sponge to remain dry after each use
