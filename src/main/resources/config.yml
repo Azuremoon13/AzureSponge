@@ -7,5 +7,9 @@ shieldRadius: 10
 # Remove Water from waterlogged blocks.
 clearWaterLog: true
 
-#Shape of sponge drain area (sphere, cube)
+# Shape of sponge drain area (sphere, cube)
 clearShape: "sphere"
+
+# Max size of Sponge player is allowed to adjust to on the fly
+#              (do NOT set this lower than shieldRadius)
+maxAdjRadius: 30

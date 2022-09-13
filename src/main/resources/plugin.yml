@@ -1,9 +1,13 @@
 name: AzureSponge
-version: 1.1.4
+version: 1.2.0
 api-version: 1.18
 description: Upgraded Sponge
 author: Azuremoon
 main: xyz.azuremoon.AzureSponge
+
+commands:
+  as:
+    permission: sponge.adj
 
 permissions:
 
@@ -20,4 +24,8 @@ permissions:
 
     sponge.dry:
       description: Allows sponge to remain dry after each use
+      default: true
+
+    sponge.adj:
+      description: Allows on the fly sponge Radius adjustments
       default: true
