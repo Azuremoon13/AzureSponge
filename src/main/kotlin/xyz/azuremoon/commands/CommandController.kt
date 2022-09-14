@@ -21,7 +21,7 @@ object CommandController {
 
         companion object {
 
-            val shapeList = listOf(Pair(Material.SLIME_BLOCK, "cube"), Pair(Material.SLIME_BALL, "sphere") )
+            val shapeList = listOf(Pair(Material.SLIME_BLOCK, "cube"), Pair(Material.SLIME_BALL, "sphere"), Pair(Material.SUNFLOWER, "cylinder") )
 
             fun commandKey(key: String): Commands? = try {
                 valueOf(key.uppercase().replace("-", "_"))
@@ -49,40 +49,49 @@ object CommandController {
 
         val shield = ItemStack(Material.SPONGE, spongeRadiusAdj[sender.uniqueId]?.second ?: ConfigController.shieldRadius)
         val ssMeta = shield.itemMeta
-        ssMeta?.setDisplayName("Shield Radius")
+        ssMeta!!.setDisplayName("Shield Radius")
         shield.itemMeta = ssMeta
 
         val sponge = ItemStack(Material.WET_SPONGE, spongeRadiusAdj[sender.uniqueId]?.first ?: ConfigController.spongeRadius)
         val srMeta = sponge.itemMeta
-        srMeta?.setDisplayName("Absorption Radius")
+        srMeta!!.setDisplayName("Absorption Radius")
         sponge.itemMeta = srMeta
 
         val green = ItemStack(Material.GREEN_STAINED_GLASS_PANE)
         val gMeta = green.itemMeta
-        gMeta?.setDisplayName("+1")
+        gMeta!!.setDisplayName("+1")
         green.itemMeta = gMeta
 
         val red = ItemStack(Material.RED_STAINED_GLASS_PANE)
         val rMeta = red.itemMeta
-        rMeta?.setDisplayName("-1")
+        rMeta!!.setDisplayName("-1")
         red.itemMeta = rMeta
 
         val left = ItemStack(Material.WHITE_STAINED_GLASS_PANE)
         val lMeta = left.itemMeta
-        lMeta?.setDisplayName("<-")
+        lMeta!!.setDisplayName("<-")
         left.itemMeta = lMeta
 
-        val shape = ItemStack(spongeShapeAdj[sender.uniqueId]?.first ?:shapeList[0].first)
+        val name = ConfigController.clearShape
+        var nameMaterial = Material.AIR
+        when (name){
+            "cube" -> nameMaterial = shapeList[0].first
+            "sphere" -> nameMaterial = shapeList[1].first
+            "cylinder" -> nameMaterial = shapeList[2].first
+        }
+
+        val shape = ItemStack(spongeShapeAdj[sender.uniqueId]?.first ?: nameMaterial )
         val sMeta = shape.itemMeta
-        sMeta?.setDisplayName(spongeShapeAdj[sender.uniqueId]?.second ?: shapeList[0].second)
+        sMeta!!.setDisplayName(spongeShapeAdj[sender.uniqueId]?.second ?: name)
         shape.itemMeta = sMeta
 
         val right = ItemStack(Material.WHITE_STAINED_GLASS_PANE)
         val riMeta = right.itemMeta
-        riMeta?.setDisplayName("->")
+        riMeta!!.setDisplayName("->")
         right.itemMeta = riMeta
 
         if (sender.hasPermission("sponge.shield")) {
+
             val greenSlots = listOf(2, 6)
             val redSlots = listOf(20, 24)
 

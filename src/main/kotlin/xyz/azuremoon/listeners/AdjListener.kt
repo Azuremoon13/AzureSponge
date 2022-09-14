@@ -54,6 +54,7 @@ class AdjListener : Listener {
                 Material.WET_SPONGE -> {saRange = e.inventory.getItem(slot)?.amount ?: 0 }
                 Material.SLIME_BLOCK -> {sShape = "cube"; sBlock = Material.SLIME_BLOCK}
                 Material.SLIME_BALL -> {sShape = "sphere"; sBlock = Material.SLIME_BALL}
+                Material.SUNFLOWER -> {sShape = "cylinder"; sBlock = Material.SUNFLOWER}
                 else -> {}
             }
         }

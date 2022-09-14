@@ -119,23 +119,31 @@ class ASEventListener : Listener {
         range.forEach { x ->
             range.forEach { y ->
                 range.forEach { z ->
-                    if (shape == "cube") {
-                        if (!hollow || ((x == -radius || x == radius) || (y == -radius || y == radius) || (z == -radius || z == radius))){
-                            area.add(location.block.getRelative(x, y, z))
-                        }
-                    }
+                    when (shape) {
+                        "cube" ->
+                            if (!hollow || ((x == -radius || x == radius) || (y == -radius || y == radius) || (z == -radius || z == radius))) {
+                                area.add(location.block.getRelative(x, y, z))
+                            }
 
-                    if (shape == "sphere") {
-                        val distance = sqrt((x * x + y * y + z * z).toDouble())
-                        if(distance <= radius && !(hollow && distance <= (radius - 1))) {
-                            area.add(location.block.getRelative(x, y, z))
+                        "sphere" -> {
+                            val distance = sqrt((x * x + y * y + z * z).toDouble())
+                            if (distance <= radius && !(hollow && distance <= (radius - 1))) {
+                                area.add(location.block.getRelative(x, y, z))
+                            }
+                        }
+
+                        "cylinder" -> {
+                            val distance = sqrt((x * x + z * z).toDouble())
+                            if (distance <= radius && !(hollow && distance <= (radius - 1))) {
+                                area.add(location.block.getRelative(x, y, z))
                             }
                         }
                     }
                 }
             }
-        return area
         }
+        return area
+    }
 }
 
 
