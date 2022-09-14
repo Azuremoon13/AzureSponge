@@ -112,9 +112,9 @@ object CommandController {
                     24 -> configGui.setItem(slot, red)
                     15 -> configGui.setItem(slot, sponge)
                     6 -> configGui.setItem(slot, green)
-                    2 -> configGui.setItem(slot, left)
+                    20 -> configGui.setItem(slot, left)
                     11 -> configGui.setItem(slot, shape)
-                    20 -> configGui.setItem(slot, right)
+                    2 -> configGui.setItem(slot, right)
                 }
             }
         }
