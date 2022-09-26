@@ -6,12 +6,12 @@ import org.bukkit.plugin.java.JavaPlugin
 import xyz.azuremoon.commands.CommandController
 import xyz.azuremoon.listeners.ASEventListener
 import xyz.azuremoon.listeners.AdjListener
+import xyz.azuremoon.recipes.sSponge
 
 @Suppress("unused")
 class AzureSponge : JavaPlugin() {
 
     companion object {
-
         var instance: AzureSponge? = null
             private set
     }
@@ -22,6 +22,8 @@ class AzureSponge : JavaPlugin() {
         saveDefaultConfig()
         server.pluginManager.registerEvents(ASEventListener(), this)
         server.pluginManager.registerEvents(AdjListener(), this)
+        sSponge()
+        logger.info("Loaded 1 recipe : AzureSponge")
     }
 
     override fun onDisable() {
@@ -38,5 +40,6 @@ class AzureSponge : JavaPlugin() {
         if (!command.testPermission(sender)) { return false }
         return CommandController.commandRoute(sender, command, args)
     }
+
 }
 

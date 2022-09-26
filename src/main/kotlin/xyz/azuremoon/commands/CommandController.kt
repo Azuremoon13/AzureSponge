@@ -8,6 +8,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import xyz.azuremoon.commands.CommandController.Commands.Companion.shapeList
+import xyz.azuremoon.listeners.AdjListener.Companion.fillRadiusAdj
 import xyz.azuremoon.listeners.AdjListener.Companion.spongeRadiusAdj
 import xyz.azuremoon.listeners.AdjListener.Companion.spongeShapeAdj
 import xyz.azuremoon.util.ConfigController
@@ -17,7 +18,7 @@ import xyz.azuremoon.util.LogTrans
 object CommandController {
 
     enum class Commands {
-        AS;
+        SPONGEADJ;
 
         companion object {
 
@@ -33,7 +34,7 @@ object CommandController {
 
     fun commandRoute(sender: CommandSender, command: Command, args: Array<out String>): Boolean {
         return when (Commands.commandKey(command.name)) {
-            Commands.AS -> configGui(sender)
+            Commands.SPONGEADJ -> configGui(sender)
             else -> false
         }
     }
@@ -56,6 +57,11 @@ object CommandController {
         val srMeta = sponge.itemMeta
         srMeta!!.setDisplayName("Absorption Radius")
         sponge.itemMeta = srMeta
+
+        val fill = ItemStack(Material.WATER_BUCKET, fillRadiusAdj[sender.uniqueId] ?: ConfigController.fillRadius)
+        val fMeta = fill.itemMeta
+        fMeta!!.setDisplayName("Fill Radius")
+        fill.itemMeta = fMeta
 
         val green = ItemStack(Material.GREEN_STAINED_GLASS_PANE)
         val gMeta = green.itemMeta
@@ -90,31 +96,52 @@ object CommandController {
         riMeta!!.setDisplayName("->")
         right.itemMeta = riMeta
 
-        if (sender.hasPermission("sponge.shield")) {
+        when {
+            sender.hasPermission("sponge.fillAdj") -> {
+                val greenSlots = listOf(1, 5, 7)
+                val redSlots = listOf(19, 23, 25)
 
-            val greenSlots = listOf(2, 6)
-            val redSlots = listOf(20, 24)
-
-            range.forEach { slot ->
-                when (slot) {
-                    in redSlots -> configGui.setItem(slot, red)
-                    in greenSlots -> configGui.setItem(slot, green)
-                    11 -> configGui.setItem(slot, shield)
-                    15 -> configGui.setItem(slot, sponge)
-                    4 -> configGui.setItem(slot, right)
-                    13 -> configGui.setItem(slot, shape)
-                    22 -> configGui.setItem(slot, left)
+                range.forEach { slot ->
+                    when (slot) {
+                        in redSlots -> configGui.setItem(slot, red)
+                        in greenSlots -> configGui.setItem(slot, green)
+                        10 -> configGui.setItem(slot, shield)
+                        14 -> configGui.setItem(slot, sponge)
+                        16 -> configGui.setItem(slot, fill)
+                        3 -> configGui.setItem(slot, right)
+                        12 -> configGui.setItem(slot, shape)
+                        21 -> configGui.setItem(slot, left)
+                    }
                 }
             }
-        } else {
-            range.forEach { slot ->
-                when (slot) {
-                    24 -> configGui.setItem(slot, red)
-                    15 -> configGui.setItem(slot, sponge)
-                    6 -> configGui.setItem(slot, green)
-                    20 -> configGui.setItem(slot, left)
-                    11 -> configGui.setItem(slot, shape)
-                    2 -> configGui.setItem(slot, right)
+
+            sender.hasPermission("sponge.shield") -> {
+                val greenSlots = listOf(2, 6)
+                val redSlots = listOf(20, 24)
+
+                range.forEach { slot ->
+                    when (slot) {
+                        in redSlots -> configGui.setItem(slot, red)
+                        in greenSlots -> configGui.setItem(slot, green)
+                        11 -> configGui.setItem(slot, shield)
+                        15 -> configGui.setItem(slot, sponge)
+                        4 -> configGui.setItem(slot, right)
+                        13 -> configGui.setItem(slot, shape)
+                        22 -> configGui.setItem(slot, left)
+                    }
+                }
+            }
+
+            else -> {
+                range.forEach { slot ->
+                    when (slot) {
+                        24 -> configGui.setItem(slot, red)
+                        15 -> configGui.setItem(slot, sponge)
+                        6 -> configGui.setItem(slot, green)
+                        20 -> configGui.setItem(slot, left)
+                        11 -> configGui.setItem(slot, shape)
+                        2 -> configGui.setItem(slot, right)
+                    }
                 }
             }
         }
@@ -123,4 +150,5 @@ object CommandController {
 
         return true
     }
+
 }
