@@ -5,14 +5,12 @@ import xyz.azuremoon.AzureSponge
 object ConfigController {
 
     private const val SPONGERADIUS = "spongeRadius"
-    private const val FILLRADIUS = "fillRadius"
     private const val SHIELDRADIUS = "shieldRadius"
     private const val CLEARWATERLOG = "clearWaterLog"
     private const val CLEARSHAPE = "clearShape"
     private const val MAXADJRADIUS = "maxAdjRadius"
 
     private const val DEFAULT_SPONGERADIUS = 20
-    private const val DEFAULT_FILLRADIUS = 20
     private const val DEFAULT_SHIELDRADIUS = 10
     private const val DEFAULT_CLEARWATERLOG = true
     private const val DEFAULT_CLEARSHAPE = "cube"
@@ -25,15 +23,6 @@ object ConfigController {
                 ?.getInt(SPONGERADIUS, DEFAULT_SPONGERADIUS)
                 ?.takeIf { it >= 0 }
                 ?: DEFAULT_SPONGERADIUS
-        }
-
-    val fillRadius: Int
-        get() {
-            return AzureSponge.instance
-                ?.config
-                ?.getInt(FILLRADIUS, DEFAULT_FILLRADIUS)
-                ?.takeIf { it >= 0 }
-                ?: DEFAULT_FILLRADIUS
         }
 
     val shieldRadius: Int

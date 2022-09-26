@@ -1,15 +1,13 @@
 name: AzureSponge
-version: 1.3.0
+version: 1.2.1
 api-version: 1.18
 description: Upgraded Sponge
 author: Azuremoon
 main: xyz.azuremoon.AzureSponge
 
 commands:
-
-  spongeadj:
+  as:
     permission: sponge.adj
-    aliases: as
 
 permissions:
 
@@ -30,12 +28,4 @@ permissions:
 
     sponge.adj:
       description: Allows on the fly sponge Radius adjustments
-      default: true
-
-    sponge.fill:
-      description: Allows player to use Saturated sponges.
-      default: true
-
-    sponge.fillAdj:
-      description: Allows player to adj Saturated sponges.
       default: true

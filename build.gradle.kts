@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "xyz.azuremoon"
-version = "1.3.0"
+version = "1.2.1"
 
 repositories {
     mavenCentral()
