@@ -3,6 +3,7 @@ package xyz.azuremoon.listeners
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
+import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Waterlogged
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -13,11 +14,22 @@ import xyz.azuremoon.util.ConfigController
 import xyz.azuremoon.listeners.AdjListener.Companion.spongeRadiusAdj
 import xyz.azuremoon.listeners.AdjListener.Companion.spongeShapeAdj
 import xyz.azuremoon.listeners.AdjListener.Companion.fillRadiusAdj
-
-
 import kotlin.math.sqrt
 
 class ASEventListener : Listener {
+
+    companion object {
+        val grabBlocks = listOf(
+            Material.GLOW_LICHEN,
+            Material.WATER,
+            Material.KELP_PLANT,
+            Material.KELP,
+            Material.SEAGRASS,
+            Material.TALL_SEAGRASS,
+            Material.BUBBLE_COLUMN,
+            Material.LAVA
+        )
+    }
 
     @EventHandler
     fun onSpongePlace(e: BlockPlaceEvent) {
@@ -35,30 +47,37 @@ class ASEventListener : Listener {
                                 spongeShapeAdj[e.player.uniqueId]?.second ?: ConfigController.clearShape
                             )
                         }
+
                         e.player.hasPermission("sponge.use") -> {
                             areaAround(e.block.location, ConfigController.spongeRadius)
                         }
+
                         else -> {
-                            areaAround(e.block.location, 5, "sphere")
+                            areaAround(e.block.location, 7, "default")
                         }
                     }
                     drainArea.forEach { void ->
                         when (void.type) {
                             Material.KELP_PLANT -> {
-                                void.breakNaturally(); void.type = Material.AIR
+                                if (ConfigController.dropBlocks) {
+                                    void.breakNaturally()
+                                }
+                                void.type = Material.AIR
                             }
 
                             Material.KELP -> {
-                                void.breakNaturally(); void.type = Material.AIR
+                                if (ConfigController.dropBlocks) {
+                                    void.breakNaturally()
+                                }
+                                void.type = Material.AIR
                             }
 
-                            Material.SEAGRASS -> void.type = Material.AIR
-                            Material.TALL_SEAGRASS -> void.type = Material.AIR
-                            Material.WATER -> void.type = Material.AIR
-                            Material.BUBBLE_COLUMN -> void.type = Material.AIR
                             Material.LAVA -> if (e.player.hasPermission("sponge.lava")) {
                                 void.type = Material.AIR
                             }
+
+                            in grabBlocks -> void.type = Material.AIR
+
                             else -> {}
                         }
                         if (void.blockData is Waterlogged && ConfigController.clearWaterlogged) {
@@ -70,13 +89,16 @@ class ASEventListener : Listener {
                             }
                         }
                     }
+
+                    // ToDo decide whether default works for shield, very server heavy (maybe thread)
                     if (e.player.hasPermission("sponge.shield") && e.player.isSneaking) {
                         val shieldArea = if (e.player.hasPermission("sponge.adj")) {
                             areaAround(
                                 e.block.location,
                                 spongeRadiusAdj[e.player.uniqueId]?.second ?: ConfigController.shieldRadius,
                                 spongeShapeAdj[e.player.uniqueId]?.second ?: ConfigController.clearShape,
-                                true
+                                hollow = true,
+                                blockOverride = listOf(Material.AIR)
                             )
                         }
                         else {
@@ -103,12 +125,19 @@ class ASEventListener : Listener {
                                 areaAround(
                                     e.block.location,
                                     fillRadiusAdj[e.player.uniqueId] ?: ConfigController.fillRadius,
-                                    spongeShapeAdj[e.player.uniqueId]?.second ?: ConfigController.clearShape
+                                    spongeShapeAdj[e.player.uniqueId]?.second ?: ConfigController.clearShape,
+                                    blockOverride = listOf(Material.AIR)
                                 )
                             }
+
                             e.player.hasPermission("sponge.fill") -> {
-                                areaAround(e.block.location, ConfigController.fillRadius)
+                                areaAround(
+                                    e.block.location,
+                                    ConfigController.fillRadius,
+                                    blockOverride = listOf(Material.AIR)
+                                )
                             }
+
                             else -> {
                                 return
                             }
@@ -124,6 +153,7 @@ class ASEventListener : Listener {
 
                 }
             }
+
             else -> {
                 return
             }
@@ -147,34 +177,80 @@ class ASEventListener : Listener {
         e.isCancelled = true
     }
 
+    // TODO blockOverride rework
     private fun areaAround(
         location: Location,
         radius: Int,
         shape: String = ConfigController.clearShape,
-        hollow: Boolean = false
+        hollow: Boolean = false,
+        blockOverride: List<Material> = listOf()
     ): List<Block> {
+
         val area = mutableListOf<Block>()
         val range = -radius..radius
-        range.forEach { x ->
-            range.forEach { y ->
-                range.forEach { z ->
-                    when (shape) {
-                        "cube" ->
-                            if (!hollow || ((x == -radius || x == radius) || (y == -radius || y == radius) || (z == -radius || z == radius))) {
-                                area.add(location.block.getRelative(x, y, z))
-                            }
+        val iterations = 1 until radius
+        val nextArea = mutableListOf<Block>()
+        val currentArea = mutableListOf<Block>()
 
-                        "sphere" -> {
-                            val distance = sqrt((x * x + y * y + z * z).toDouble())
-                            if (distance <= radius && !(hollow && distance <= (radius - 1))) {
-                                area.add(location.block.getRelative(x, y, z))
+        val blockFaces = listOf(
+            BlockFace.UP,
+            BlockFace.DOWN,
+            BlockFace.NORTH,
+            BlockFace.EAST,
+            BlockFace.SOUTH,
+            BlockFace.WEST
+        )
+
+        when (shape) {
+            "default" -> {
+                currentArea.add(location.block)
+                iterations.forEach { loop ->
+
+                    if (loop != 1) {
+                        currentArea.clear()
+                        currentArea.addAll(nextArea)
+                        nextArea.clear()
+                    }
+
+                    currentArea.forEach { block ->
+                        blockFaces.forEach { face ->
+                            val facedBlock = block.getRelative(face)
+                            if ((facedBlock.type in grabBlocks || facedBlock.type in blockOverride) && facedBlock !in area) {
+                                area.add(facedBlock); nextArea.add(facedBlock)
                             }
                         }
+                    }
+                }
 
-                        "cylinder" -> {
-                            val distance = sqrt((x * x + z * z).toDouble())
-                            if (distance <= radius && !(hollow && distance <= (radius - 1))) {
-                                area.add(location.block.getRelative(x, y, z))
+                if (hollow) {
+                    return nextArea
+                }
+            }
+
+            else -> {
+                range.forEach { x ->
+                    range.forEach { y ->
+                        range.forEach { z ->
+                            when (shape) {
+                                "cube" ->
+                                    if (!hollow || ((x == -radius || x == radius) || (y == -radius || y == radius) || (z == -radius || z == radius))) {
+                                        area.add(location.block.getRelative(x, y, z))
+                                    }
+
+                                "sphere" -> {
+                                    val distance = sqrt((x * x + y * y + z * z).toDouble())
+                                    if (distance <= radius && !(hollow && distance <= (radius - 1))) {
+                                        area.add(location.block.getRelative(x, y, z))
+                                    }
+                                }
+
+                                "cylinder" -> {
+                                    val distance = sqrt((x * x + z * z).toDouble())
+                                    if (distance <= radius && !(hollow && distance <= (radius - 1))) {
+                                        area.add(location.block.getRelative(x, y, z))
+                                    }
+                                }
+
                             }
                         }
                     }
@@ -183,6 +259,7 @@ class ASEventListener : Listener {
         }
         return area
     }
+
 }
 
 

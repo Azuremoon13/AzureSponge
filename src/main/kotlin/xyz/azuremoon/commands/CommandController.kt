@@ -15,6 +15,7 @@ import xyz.azuremoon.util.ConfigController
 import xyz.azuremoon.util.LogTrans
 
 
+
 object CommandController {
 
     enum class Commands {
@@ -22,7 +23,12 @@ object CommandController {
 
         companion object {
 
-            val shapeList = listOf(Pair(Material.SLIME_BLOCK, "cube"), Pair(Material.SLIME_BALL, "sphere"), Pair(Material.SUNFLOWER, "cylinder") )
+            val shapeList = listOf(
+                Triple(Material.HEART_OF_THE_SEA, "default", "Blocked by walls"),
+                Triple(Material.SLIME_BLOCK, "cube", "NOT Blocked by walls"),
+                Triple(Material.SLIME_BALL, "sphere", "NOT Blocked by walls"),
+                Triple(Material.SUNFLOWER, "cylinder", "NOT Blocked by walls")
+            )
 
             fun commandKey(key: String): Commands? = try {
                 valueOf(key.uppercase().replace("-", "_"))
@@ -32,7 +38,7 @@ object CommandController {
         }
     }
 
-    fun commandRoute(sender: CommandSender, command: Command, args: Array<out String>): Boolean {
+    fun commandRoute(sender: CommandSender, command: Command): Boolean {
         return when (Commands.commandKey(command.name)) {
             Commands.SPONGEADJ -> configGui(sender)
             else -> false
@@ -80,15 +86,18 @@ object CommandController {
 
         val name = ConfigController.clearShape
         var nameMaterial = Material.AIR
+        var nameLore = ""
         when (name){
-            "cube" -> nameMaterial = shapeList[0].first
-            "sphere" -> nameMaterial = shapeList[1].first
-            "cylinder" -> nameMaterial = shapeList[2].first
+            "default" -> {nameMaterial = shapeList[0].first; nameLore = shapeList[0].third}
+            "cube" -> {nameMaterial = shapeList[1].first; nameLore = shapeList[1].third}
+            "sphere" -> {nameMaterial = shapeList[2].first; nameLore = shapeList[2].third}
+            "cylinder" -> {nameMaterial = shapeList[3].first; nameLore = shapeList[3].third}
         }
 
         val shape = ItemStack(spongeShapeAdj[sender.uniqueId]?.first ?: nameMaterial )
         val sMeta = shape.itemMeta
         sMeta!!.setDisplayName(spongeShapeAdj[sender.uniqueId]?.second ?: name)
+        sMeta.lore = mutableListOf(spongeShapeAdj[sender.uniqueId]?.third ?: nameLore)
         shape.itemMeta = sMeta
 
         val right = ItemStack(Material.WHITE_STAINED_GLASS_PANE)
@@ -152,3 +161,5 @@ object CommandController {
     }
 
 }
+
+

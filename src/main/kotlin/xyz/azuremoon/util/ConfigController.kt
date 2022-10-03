@@ -8,14 +8,16 @@ object ConfigController {
     private const val FILLRADIUS = "fillRadius"
     private const val SHIELDRADIUS = "shieldRadius"
     private const val CLEARWATERLOG = "clearWaterLog"
+    private const val DROPBLOCKS = "dropBlocks"
     private const val CLEARSHAPE = "clearShape"
     private const val MAXADJRADIUS = "maxAdjRadius"
 
     private const val DEFAULT_SPONGERADIUS = 20
-    private const val DEFAULT_FILLRADIUS = 20
+    private const val DEFAULT_FILLRADIUS = 10
     private const val DEFAULT_SHIELDRADIUS = 10
     private const val DEFAULT_CLEARWATERLOG = true
-    private const val DEFAULT_CLEARSHAPE = "cube"
+    private const val DEFAULT_DROPBLOCKS = true
+    private const val DEFAULT_CLEARSHAPE = "default"
     private const val DEFAULT_MAXADJRADIUS = 30
 
     val spongeRadius: Int
@@ -51,6 +53,14 @@ object ConfigController {
                 ?.config
                 ?.getBoolean(CLEARWATERLOG, DEFAULT_CLEARWATERLOG)
                 ?: DEFAULT_CLEARWATERLOG
+        }
+
+    val dropBlocks: Boolean
+        get() {
+            return AzureSponge.instance
+                ?.config
+                ?.getBoolean(DROPBLOCKS, DEFAULT_DROPBLOCKS)
+                ?: DEFAULT_DROPBLOCKS
         }
 
     val clearShape: String

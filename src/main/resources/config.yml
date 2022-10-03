@@ -2,7 +2,7 @@
 spongeRadius: 20
 
 # Radius for Sponge to add water
-fillRadius: 20
+fillRadius: 10
 
 # Radius for SpongeShield to shield water or lava
 shieldRadius: 10
@@ -10,9 +10,13 @@ shieldRadius: 10
 # Remove Water from waterlogged blocks.
 clearWaterLog: true
 
+# Enables drop blocks of breakable items in sponge area
+dropBlocks: true
+
 # Shape of sponge drain/fill area:
-#   (sphere, cube, cylinder)
-clearShape: "sphere"
+#   (default, sphere, cube, cylinder)
+#     ^ default is the only mode stopped by walls, same as default minecraft mechanics
+clearShape: "default"
 
 # Max size of Sponge player is allowed to adjust to on the fly
 #              (do NOT set this lower than shieldRadius)

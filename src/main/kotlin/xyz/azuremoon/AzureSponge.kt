@@ -23,7 +23,7 @@ class AzureSponge : JavaPlugin() {
         server.pluginManager.registerEvents(ASEventListener(), this)
         server.pluginManager.registerEvents(AdjListener(), this)
         sSponge()
-        logger.info("Loaded 1 recipe : AzureSponge")
+        logger.info("AzureSponge : Loaded 1 recipe")
     }
 
     override fun onDisable() {
@@ -38,7 +38,7 @@ class AzureSponge : JavaPlugin() {
         args: Array<out String>
     ): Boolean {
         if (!command.testPermission(sender)) { return false }
-        return CommandController.commandRoute(sender, command, args)
+        return CommandController.commandRoute(sender, command)
     }
 
 }

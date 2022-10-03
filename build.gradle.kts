@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "xyz.azuremoon"
-version = "1.3.0"
+version = "1.4.0"
 
 repositories {
     mavenCentral()
@@ -17,7 +17,7 @@ dependencies {
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-api:5.9.0")
 
-    compileOnly("org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT")
 }
 
 tasks.test {
@@ -44,3 +44,4 @@ tasks.getByName("build") {
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
 }
+

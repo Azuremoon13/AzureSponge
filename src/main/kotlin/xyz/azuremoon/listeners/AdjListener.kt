@@ -16,7 +16,7 @@ class AdjListener : Listener {
 
     companion object {
         val spongeRadiusAdj = mutableMapOf<UUID, Pair<Int, Int>>()
-        val spongeShapeAdj = mutableMapOf<UUID, Pair<Material, String>>()
+        val spongeShapeAdj = mutableMapOf<UUID, Triple<Material, String, String>>()
         val fillRadiusAdj = mutableMapOf<UUID, Int>()
     }
 
@@ -45,7 +45,8 @@ class AdjListener : Listener {
         var ssRange = 0
         var saRange = 0
         var fRange = 0
-        var sShape = "cube"
+        var sShape = "default"
+        var sLore = ""
         var sBlock = Material.AIR
 
         range.forEach { slot ->
@@ -63,22 +64,26 @@ class AdjListener : Listener {
                 }
 
                 Material.SLIME_BLOCK -> {
-                    sShape = "cube"; sBlock = Material.SLIME_BLOCK
+                    sShape = "cube"; sLore = "NOT Blocked by walls"; sBlock = Material.SLIME_BLOCK
                 }
 
                 Material.SLIME_BALL -> {
-                    sShape = "sphere"; sBlock = Material.SLIME_BALL
+                    sShape = "sphere"; sLore = "NOT Blocked by walls"; sBlock = Material.SLIME_BALL
                 }
 
                 Material.SUNFLOWER -> {
-                    sShape = "cylinder"; sBlock = Material.SUNFLOWER
+                    sShape = "cylinder"; sLore = "NOT Blocked by walls"; sBlock = Material.SUNFLOWER
+                }
+
+                Material.HEART_OF_THE_SEA -> {
+                    sShape = "default"; sLore = "Blocked by walls";  sBlock = Material.HEART_OF_THE_SEA
                 }
 
                 else -> {}
             }
         }
         spongeRadiusAdj[e.player.uniqueId] = Pair(saRange, ssRange)
-        spongeShapeAdj[e.player.uniqueId] = Pair(sBlock, sShape)
+        spongeShapeAdj[e.player.uniqueId] = Triple(sBlock, sShape, sLore)
         fillRadiusAdj[e.player.uniqueId] = fRange
     }
 }
@@ -88,8 +93,9 @@ private fun updateConfigItem(slot: Int, inventory: Inventory, name: String) {
 
     var amount = inventory.getItem(slot)!!.amount
     val itemName = inventory.getItem(slot)!!.itemMeta!!.displayName
+    val itemLore = inventory.getItem(slot)!!.itemMeta!!.lore?.get(0)
     val itemMaterial = inventory.getItem(slot)!!.type
-    val indexFill: Int = shapeList.indexOf(Pair(itemMaterial, itemName))
+    val indexFill: Int = shapeList.indexOf(Triple(itemMaterial, itemName, itemLore))
     var index = 0
     when (name) {
         "-1" -> if (amount >= 2) {
@@ -135,6 +141,7 @@ private fun updateConfigItem(slot: Int, inventory: Inventory, name: String) {
             val shape = ItemStack(shapeList[index].first)
             val sMeta = shape.itemMeta
             sMeta?.setDisplayName(shapeList[index].second)
+            sMeta?.lore = mutableListOf(shapeList[index].third)
             shape.itemMeta = sMeta
             inventory.setItem(slot, shape)
         }
