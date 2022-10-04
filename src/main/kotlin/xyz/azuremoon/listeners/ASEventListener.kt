@@ -1,5 +1,6 @@
 package xyz.azuremoon.listeners
 
+import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -10,6 +11,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.block.SpongeAbsorbEvent
+import org.bukkit.plugin.Plugin
+import xyz.azuremoon.AzureSponge
 import xyz.azuremoon.util.ConfigController
 import xyz.azuremoon.listeners.AdjListener.Companion.spongeRadiusAdj
 import xyz.azuremoon.listeners.AdjListener.Companion.spongeShapeAdj
@@ -29,129 +32,84 @@ class ASEventListener : Listener {
             Material.BUBBLE_COLUMN,
             Material.LAVA
         )
+
+        val allowedReplaceBlocks = listOf(Material.LAVA, Material.WATER)
+
+        val asPlugin = AzureSponge.instance as Plugin
     }
 
     @EventHandler
     fun onSpongePlace(e: BlockPlaceEvent) {
 
-        val allowedReplaceBlocks = listOf(Material.LAVA, Material.WATER)
 
         when (e.blockPlaced.type) {
             Material.SPONGE -> {
-                if (e.blockReplacedState.type in allowedReplaceBlocks) {
-                    val drainArea = when {
-                        e.player.hasPermission("sponge.adj") -> {
-                            areaAround(
-                                e.block.location,
-                                spongeRadiusAdj[e.player.uniqueId]?.first ?: ConfigController.spongeRadius,
-                                spongeShapeAdj[e.player.uniqueId]?.second ?: ConfigController.clearShape
-                            )
-                        }
 
-                        e.player.hasPermission("sponge.use") -> {
-                            areaAround(e.block.location, ConfigController.spongeRadius)
-                        }
-
-                        else -> {
-                            areaAround(e.block.location, 7, "default")
-                        }
-                    }
-                    drainArea.forEach { void ->
-                        when (void.type) {
-                            Material.KELP_PLANT -> {
-                                if (ConfigController.dropBlocks) {
-                                    void.breakNaturally()
+                Bukkit.getScheduler().runTaskAsynchronously(asPlugin, Runnable {
+                    val areas = drainCalculations(e)
+                    Bukkit.getScheduler().runTask(asPlugin, Runnable {
+                        areas.first.forEach { void ->
+                            when (void.type) {
+                                Material.KELP_PLANT -> {
+                                    if (ConfigController.dropBlocks) {
+                                        void.breakNaturally()
+                                    }
+                                    void.type = Material.AIR
                                 }
-                                void.type = Material.AIR
-                            }
 
-                            Material.KELP -> {
-                                if (ConfigController.dropBlocks) {
-                                    void.breakNaturally()
+                                Material.KELP -> {
+                                    if (ConfigController.dropBlocks) {
+                                        void.breakNaturally()
+                                    }
+                                    void.type = Material.AIR
                                 }
-                                void.type = Material.AIR
+
+                                Material.LAVA -> if (e.player.hasPermission("sponge.lava")) {
+                                    void.type = Material.AIR
+                                }
+
+                                in grabBlocks -> void.type = Material.AIR
+
+                                else -> {}
                             }
-
-                            Material.LAVA -> if (e.player.hasPermission("sponge.lava")) {
-                                void.type = Material.AIR
-                            }
-
-                            in grabBlocks -> void.type = Material.AIR
-
-                            else -> {}
-                        }
-                        if (void.blockData is Waterlogged && ConfigController.clearWaterlogged) {
-                            val wl: Waterlogged = void.blockData as Waterlogged
-                            if (wl.isWaterlogged) {
-                                wl.isWaterlogged = false
-                                void.blockData = wl
-                                void.state.update()
+                            if (void.blockData is Waterlogged && ConfigController.clearWaterlogged) {
+                                val wl: Waterlogged = void.blockData as Waterlogged
+                                if (wl.isWaterlogged) {
+                                    wl.isWaterlogged = false
+                                    void.blockData = wl
+                                    void.state.update()
+                                }
                             }
                         }
-                    }
-
-                    // ToDo decide whether default works for shield, very server heavy (maybe thread)
-                    if (e.player.hasPermission("sponge.shield") && e.player.isSneaking) {
-                        val shieldArea = if (e.player.hasPermission("sponge.adj")) {
-                            areaAround(
-                                e.block.location,
-                                spongeRadiusAdj[e.player.uniqueId]?.second ?: ConfigController.shieldRadius,
-                                spongeShapeAdj[e.player.uniqueId]?.second ?: ConfigController.clearShape,
-                                hollow = true,
-                                blockOverride = listOf(Material.AIR)
-                            )
-                        }
-                        else {
-                            areaAround(e.blockPlaced.location, (ConfigController.shieldRadius), hollow = true)
-                        }
-                        shieldArea.forEach {
-                            when (it.type) {
-                                Material.AIR -> it.type = Material.STRUCTURE_VOID
+                        areas.second.forEach { shield ->
+                            when (shield.type) {
+                                Material.AIR -> shield.type = Material.STRUCTURE_VOID
                                 else -> {}
                             }
                         }
-                    }
-                    if (!e.player.hasPermission("sponge.dry")) {
-                        e.blockPlaced.type = Material.WET_SPONGE
-                    }
-                }
+
+                        if (!e.player.hasPermission("sponge.dry")) {
+                            e.blockPlaced.type = Material.WET_SPONGE
+                        }
+
+                    })
+                })
+
             }
 
             Material.WET_SPONGE -> {
-                when (e.itemInHand.itemMeta?.lore.toString()) {
-                    "[An oddly saturated sponge]" -> {
-                        val fillArea = when {
-                            e.player.hasPermission("sponge.fillAdj") -> {
-                                areaAround(
-                                    e.block.location,
-                                    fillRadiusAdj[e.player.uniqueId] ?: ConfigController.fillRadius,
-                                    spongeShapeAdj[e.player.uniqueId]?.second ?: ConfigController.clearShape,
-                                    blockOverride = listOf(Material.AIR)
-                                )
-                            }
-
-                            e.player.hasPermission("sponge.fill") -> {
-                                areaAround(
-                                    e.block.location,
-                                    ConfigController.fillRadius,
-                                    blockOverride = listOf(Material.AIR)
-                                )
-                            }
-
-                            else -> {
-                                return
-                            }
-                        }
-                        fillArea.forEach { fill ->
+                Bukkit.getScheduler().runTaskAsynchronously(asPlugin, Runnable {
+                    val area = fillCalculations(e)
+                    Bukkit.getScheduler().runTask(asPlugin, Runnable {
+                        area.forEach { fill ->
                             when (fill.type) {
                                 Material.AIR -> fill.type = Material.WATER
                                 else -> {}
                             }
                         }
                         e.blockPlaced.type = Material.SPONGE
-                    }
-
-                }
+                    })
+                })
             }
 
             else -> {
@@ -176,6 +134,77 @@ class ASEventListener : Listener {
     fun spongeOverride(e: SpongeAbsorbEvent) {
         e.isCancelled = true
     }
+
+    private fun drainCalculations(e: BlockPlaceEvent): Pair<List<Block>, List<Block>> {
+        var drainArea = listOf<Block>()
+        var shieldArea = listOf<Block>()
+
+        if (e.blockReplacedState.type in allowedReplaceBlocks) {
+            drainArea = when {
+                e.player.hasPermission("sponge.adj") ->
+                    areaAround(
+                        e.block.location,
+                        spongeRadiusAdj[e.player.uniqueId]?.first ?: ConfigController.spongeRadius,
+                        spongeShapeAdj[e.player.uniqueId]?.second ?: ConfigController.clearShape
+                    )
+
+                e.player.hasPermission("sponge.use") ->
+                    areaAround(e.block.location, ConfigController.spongeRadius)
+
+                else ->
+                    areaAround(e.block.location, 7, "default")
+            }
+
+            if (e.player.hasPermission("sponge.shield") && e.player.isSneaking) {
+                shieldArea = when {
+                    e.player.hasPermission("sponge.adj") ->
+                        areaAround(
+                            e.block.location,
+                            spongeRadiusAdj[e.player.uniqueId]?.second ?: ConfigController.shieldRadius,
+                            spongeShapeAdj[e.player.uniqueId]?.second ?: ConfigController.clearShape,
+                            hollow = true,
+                            blockOverride = listOf(Material.AIR)
+                        )
+
+                    else ->
+                        areaAround(e.blockPlaced.location, (ConfigController.shieldRadius), hollow = true)
+                }
+            }
+        }
+        return Pair(drainArea, shieldArea)
+    }
+
+    private fun fillCalculations(e: BlockPlaceEvent): List<Block> {
+
+        var fillArea = listOf<Block>()
+
+        when (e.itemInHand.itemMeta?.lore.toString()) {
+            "[An oddly saturated sponge]" -> {
+                fillArea = when {
+                    e.player.hasPermission("sponge.fillAdj") -> {
+                        areaAround(
+                            e.block.location,
+                            fillRadiusAdj[e.player.uniqueId] ?: ConfigController.fillRadius,
+                            spongeShapeAdj[e.player.uniqueId]?.second ?: ConfigController.clearShape,
+                            blockOverride = listOf(Material.AIR)
+                        )
+                    }
+
+                    e.player.hasPermission("sponge.fill") -> {
+                        areaAround(
+                            e.block.location,
+                            ConfigController.fillRadius,
+                            blockOverride = listOf(Material.AIR)
+                        )
+                    }
+
+                    else -> {return  fillArea}
+                }
+            }
+        }
+        return  fillArea
+    }
+
 
     // TODO blockOverride rework
     private fun areaAround(
